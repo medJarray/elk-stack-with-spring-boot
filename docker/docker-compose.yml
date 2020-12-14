@@ -1,0 +1,62 @@
+version: "3.2"
+services:
+  elasticsearch:
+    image: elasticsearch:$ELK_VERSION
+    container_name: elasticsearch
+    hostname: elasticsearch
+    volumes:
+      - elasticsearch:/usr/share/elasticsearch/data
+    environment:
+      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+      ELASTICSEARCH_USERNAME: $ELASTIC_USER
+      ELASTICSEARCH_PASSWORD: $ELASTIC_PASSWORD
+      discovery.type: single-node
+    ports:
+      - 9200:9200
+      - 9300:9300
+    restart: unless-stopped
+    networks:
+      - elknetwork
+  kibana:
+    image: kibana:$ELK_VERSION
+    container_name: kibana
+    hostname: kibana
+    ports:
+      - 5601:5601
+    links:
+      - elasticsearch:elasticsearch
+    depends_on:
+      - elasticsearch
+      - logstash
+    restart: unless-stopped
+    networks:
+      - elknetwork
+  logstash:
+    image: logstash:$ELK_VERSION
+    container_name: logstash
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+      XPACK_MONITORING_ELASTICSEARCH_USERNAME: $ELASTIC_USER
+      XPACK_MONITORING_ELASTICSEARCH_PASSWORD: $ELASTIC_PASSWORD
+      XPACK_MONITORING_ELASTICSEARCH_HOSTS: "elasticsearch:9200"
+      XPACK_MONITORING_ENABLED: "true"
+    volumes:
+        - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+    ports:
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+      - "9600:9600"
+    restart: unless-stopped
+    links:
+      - elasticsearch:elasticsearch
+    depends_on:
+      - elasticsearch
+    networks:
+      - elknetwork
+
+networks:
+  elknetwork:
+    driver: bridge
+
+volumes:
+  elasticsearch:
