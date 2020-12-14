@@ -27,7 +27,7 @@ import static org.springframework.web.util.UriComponentsBuilder.*;
 
 @RestController
 @RequestMapping(VehicleController.PATH)
-@Api(description = "Set of endpoints for Creating, Retrieving, Updating and Deleting of Vehicle.")
+@Api("Set of endpoints for Creating, Retrieving, Updating and Deleting of Vehicle.")
 @RequiredArgsConstructor
 @Validated
 @Slf4j
